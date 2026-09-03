@@ -1,19 +1,20 @@
-from sqlalchemy import text
-
-from database import SessionLocal
+from database import get_connection
 
 
-db = SessionLocal()
+conn = get_connection()
 
 try:
-    result = db.execute(
-        text("SELECT name, specialty FROM doctors ORDER BY id")
-    )
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT id, name, specialty
+            FROM doctors
+            ORDER BY id
+        """)
 
-    doctors = result.fetchall()
+        doctors = cursor.fetchall()
 
-    for doctor in doctors:
-        print(doctor)
+        for doctor in doctors:
+            print(doctor)
 
 finally:
-    db.close()
+    conn.close()

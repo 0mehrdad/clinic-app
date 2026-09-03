@@ -1,4 +1,4 @@
-from database import SessionLocal
+from database import get_connection
 from clinic_service import (
     get_all_services,
     get_doctors_for_service,
@@ -6,15 +6,13 @@ from clinic_service import (
 )
 
 
-db = SessionLocal()
+conn = get_connection()
 
 try:
     print("\nSERVICES")
     print("----------------")
 
-    services = get_all_services(db)
-
-    for service in services:
+    for service in get_all_services(conn):
         print(
             service["id"],
             service["name"],
@@ -22,26 +20,20 @@ try:
             service["price"],
         )
 
-
     print("\nDOCTORS FOR SERVICE 1")
     print("----------------")
 
-    doctors = get_doctors_for_service(db, 1)
-
-    for doctor in doctors:
+    for doctor in get_doctors_for_service(conn, 1):
         print(
             doctor["id"],
             doctor["name"],
             doctor["specialty"],
         )
 
-
     print("\nSCHEDULE FOR DOCTOR 1")
     print("----------------")
 
-    schedule = get_doctor_schedule(db, 1)
-
-    for shift in schedule:
+    for shift in get_doctor_schedule(conn, 1):
         print(
             shift["weekday"],
             shift["start_time"],
@@ -49,4 +41,4 @@ try:
         )
 
 finally:
-    db.close()
+    conn.close()

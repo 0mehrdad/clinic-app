@@ -1,26 +1,21 @@
 from datetime import date
 
-from database import SessionLocal
+from database import get_connection
 from clinic_service import get_available_slots
 
 
-db = SessionLocal()
+conn = get_connection()
 
 try:
-    appointment_date = date(2026, 8, 31)
-
     slots = get_available_slots(
-        db=db,
+        conn=conn,
         doctor_id=1,
         service_id=1,
-        appointment_date=appointment_date,
+        appointment_date=date(2026, 9, 3),
     )
 
-    print(f"\nAvailable slots for {appointment_date}")
-    print("--------------------------------")
-
     for slot in slots:
-        print(slot.strftime("%H:%M"))
+        print(slot.strftime("%Y-%m-%d %H:%M"))
 
 finally:
-    db.close()
+    conn.close()

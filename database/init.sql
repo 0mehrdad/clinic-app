@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE clinic_hours (
     id SERIAL PRIMARY KEY,
     weekday INTEGER NOT NULL CHECK (weekday BETWEEN 0 AND 6),
@@ -76,10 +77,27 @@ CREATE TABLE appointments (
         REFERENCES services(id),
 
     start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
 
     status VARCHAR(20) NOT NULL DEFAULT 'booked'
-        CHECK (status IN ('booked', 'cancelled', 'completed', 'no_show')),
+        CHECK (
+            status IN (
+                'booked',
+                'cancelled',
+                'completed',
+                'no_show'
+            )
+        ),
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CHECK (end_time > start_time)
 );
+ALTER TABLE appointments
+ADD CONSTRAINT no_overlapping_doctor_appointments
+EXCLUDE USING gist (
+    doctor_id WITH =,
+    tsrange(start_time, end_time, '[)') WITH &&
+)
+WHERE (status = 'booked');
