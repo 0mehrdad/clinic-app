@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
-from datetime import date
+from datetime import date, datetime
+from pydantic import BaseModel
 
 from app.database import get_connection
 from app.clinic_service import (
@@ -7,7 +8,14 @@ from app.clinic_service import (
     get_doctors_for_service,
     get_doctor_schedule,
     get_available_slots,
+    book_appointment,
 )
+
+class AppointmentCreate(BaseModel):
+    patient_id: int
+    doctor_id: int
+    service_id: int
+    start_time: datetime
 
 
 app = FastAPI(
@@ -113,6 +121,30 @@ def availability(
                 for slot in slots
             ],
         }
+
+    finally:
+        conn.close()
+
+@app.post("/appointments")
+def create_appointment(appointment: AppointmentCreate):
+    conn = get_connection()
+
+    try:
+        result = book_appointment(
+            conn=conn,
+            patient_id=appointment.patient_id,
+            doctor_id=appointment.doctor_id,
+            service_id=appointment.service_id,
+            start_time=appointment.start_time,
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=result["message"],
+            )
+
+        return result
 
     finally:
         conn.close()
