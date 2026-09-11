@@ -442,3 +442,28 @@ def reschedule_appointment(
     except Exception:
         conn.rollback()
         raise
+
+
+def get_appointment(conn, appointment_id: int):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                a.id,
+                a.patient_id,
+                p.name AS patient_name,
+                a.doctor_id,
+                d.name AS doctor_name,
+                a.service_id,
+                s.name AS service_name,
+                a.start_time,
+                a.end_time,
+                a.status
+            FROM appointments a
+            JOIN patients p ON p.id = a.patient_id
+            JOIN doctors d ON d.id = a.doctor_id
+            JOIN services s ON s.id = a.service_id
+            WHERE a.id = %s
+        """, (appointment_id,))
+
+        return cursor.fetchone()
+
