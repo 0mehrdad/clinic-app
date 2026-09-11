@@ -3,12 +3,15 @@ from datetime import date, datetime
 from pydantic import BaseModel
 
 from app.database import get_connection
-from app.clinic_service import (
+from clinic_service import (
     get_all_services,
     get_doctors_for_service,
     get_doctor_schedule,
     get_available_slots,
+    get_appointment,
     book_appointment,
+    cancel_appointment,
+    reschedule_appointment,
 )
 
 class AppointmentCreate(BaseModel):
@@ -136,6 +139,74 @@ def create_appointment(appointment: AppointmentCreate):
             doctor_id=appointment.doctor_id,
             service_id=appointment.service_id,
             start_time=appointment.start_time,
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=result["message"],
+            )
+
+        return result
+
+    finally:
+        conn.close()
+
+@app.get("/appointments/{appointment_id}")
+def appointment_details(appointment_id: int):
+    conn = get_connection()
+
+    try:
+        appointment = get_appointment(
+            conn=conn,
+            appointment_id=appointment_id,
+        )
+
+        if appointment is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Appointment not found.",
+            )
+
+        return dict(appointment)
+
+    finally:
+        conn.close()
+@app.patch("/appointments/{appointment_id}/cancel")
+def cancel_existing_appointment(appointment_id: int):
+    conn = get_connection()
+
+    try:
+        result = cancel_appointment(
+            conn=conn,
+            appointment_id=appointment_id,
+        )
+
+        if not result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=result["message"],
+            )
+
+        return result
+
+    finally:
+        conn.close()
+class AppointmentReschedule(BaseModel):
+    new_start_time: datetime
+
+@app.patch("/appointments/{appointment_id}/reschedule")
+def reschedule_existing_appointment(
+    appointment_id: int,
+    request: AppointmentReschedule,
+):
+    conn = get_connection()
+
+    try:
+        result = reschedule_appointment(
+            conn=conn,
+            appointment_id=appointment_id,
+            new_start_time=request.new_start_time,
         )
 
         if not result["success"]:
