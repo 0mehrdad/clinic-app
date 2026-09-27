@@ -467,3 +467,78 @@ def get_appointment(conn, appointment_id: int):
 
         return cursor.fetchone()
 
+def get_patient_by_identity(
+    conn,
+    identity_type: str,
+    identity_value: str,
+):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT
+                p.id,
+                p.name,
+                p.phone,
+                p.email
+            FROM patients p
+            JOIN patient_identities pi
+                ON pi.patient_id = p.id
+            WHERE pi.identity_type = %s
+              AND pi.identity_value = %s
+            LIMIT 1
+            """,
+            (identity_type, identity_value),
+        )
+
+        return cur.fetchone()
+def add_patient_identity(
+    conn,
+    patient_id: int,
+    identity_type: str,
+    identity_value: str,
+    verified: bool = False,
+):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO patient_identities (
+                patient_id,
+                identity_type,
+                identity_value,
+                verified
+            )
+            VALUES (%s, %s, %s, %s)
+            RETURNING id, patient_id, identity_type, identity_value, verified
+            """,
+            (
+                patient_id,
+                identity_type,
+                identity_value,
+                verified,
+            ),
+        )
+
+        identity = cur.fetchone()
+        conn.commit()
+
+        return identity
+def create_patient(
+    conn,
+    name: str,
+    phone: str,
+    email: str,
+):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO patients (name, phone, email)
+            VALUES (%s, %s, %s)
+            RETURNING id, name, phone, email
+            """,
+            (name, phone, email),
+        )
+
+        patient = cur.fetchone()
+        conn.commit()
+
+        return patient

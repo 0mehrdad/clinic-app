@@ -8,7 +8,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://clinic_user:clinic_password@localhost:5432/clinic_db",
+)
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not configured")

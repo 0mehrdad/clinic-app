@@ -3,7 +3,7 @@ from datetime import date, datetime
 from pydantic import BaseModel
 
 from app.database import get_connection
-from clinic_service import (
+from app.clinic_service import (
     get_all_services,
     get_doctors_for_service,
     get_doctor_schedule,

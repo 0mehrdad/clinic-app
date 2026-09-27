@@ -63,6 +63,17 @@ CREATE TABLE patients (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS patient_identities (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    identity_type VARCHAR(50) NOT NULL,
+    identity_value VARCHAR(255) NOT NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(identity_type, identity_value)
+);
+
 
 CREATE TABLE appointments (
     id SERIAL PRIMARY KEY,

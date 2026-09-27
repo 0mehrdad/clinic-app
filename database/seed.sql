@@ -122,3 +122,18 @@ INSERT INTO patients (name, phone, email)
 VALUES
     ('Alice Brown', '07111111111', 'alice@example.com'),
     ('Sophie Green', '07222222222', 'sophie@example.com');
+
+INSERT INTO patient_identities (
+    patient_id,
+    identity_type,
+    identity_value,
+    verified
+)
+VALUES
+    (1, 'phone', '07111111111', TRUE),
+    (1, 'email', 'alice@example.com', TRUE),
+    (1, 'telegram', '111111111', TRUE),
+
+    (2, 'phone', '07222222222', TRUE),
+    (2, 'email', 'sophie@example.com', TRUE),
+    (2, 'telegram', '222222222', TRUE);
